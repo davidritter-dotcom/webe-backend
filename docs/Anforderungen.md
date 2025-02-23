@@ -29,9 +29,9 @@ Das Ziel ist es, möglichst viele Begriffe korrekt zu erraten und Punkte zu samm
 - Der Spieler mit den meisten Punkten am Ende gewinnt.
 - Im Falle eines Gleichstands kann eine zusätzliche Runde gespielt werden.
 
-## 4. Anforderungen
+## Anforderungen
 
-### 4.1 Funktionale Anforderungen
+### Funktionale Anforderungen
 
 | ID   | Name                     | Ziel                                                                   | Ereignis                | Muss/Kann |
 |------|--------------------------|------------------------------------------------------------------------|-------------------------|-----------|
@@ -52,7 +52,7 @@ Das Ziel ist es, möglichst viele Begriffe korrekt zu erraten und Punkte zu samm
 | FA15 | Chat-Funktion            | Spieler können während der Runde chatten.                              | Während der Runde       | Muss      |
 | FA16 | Fehlerbehandlung         | Das Spiel zeigt Fehlermeldungen bei kritischen Fehlern an.             | Während der Runde       | Muss      | 
 
-### 4.2 Nicht-funktionale Anforderungen
+### Nicht-funktionale Anforderungen
 
 | ID   | Name                   | Ziel                                                                                                       | Muss/Kann |
 |------|------------------------|------------------------------------------------------------------------------------------------------------|-----------|
@@ -62,16 +62,16 @@ Das Ziel ist es, möglichst viele Begriffe korrekt zu erraten und Punkte zu samm
 | NFA4 | Sicherheit             | Spielerdaten sollen sicher gespeichert und verarbeitet werden.                                             | Muss      |
 | NFA5 | Responsive Design      | Das Spiel soll auf verschiedenen Bildschirmgrössen spielbar sein.                                          | Muss      |
 
-### 5. Verwendete Technologien und Bibliotheken
+### Verwendete Technologien und Bibliotheken
 
 - **Frontend:** React.js, Next.js, ShadCN, Tailwind CSS
 - **Backend:** Node.js, Express.js
 - **Echtzeit-Kommunikation:** WebSockets (Socket.io)
 - **Datenbank:** MongoDB
 
-## 6. Kommunikation zwischen Client und Server
+## Kommunikation zwischen Client und Server
 
-### 6.1 REST-Calls für grundlegende Aktionen
+### REST-Calls für grundlegende Aktionen
 
 Für grundlegende Aktionen wie Registrierung, Login oder Spielverwaltung verwenden wir REST-Calls. Diese basieren auf
 HTTP und bieten einfache Anfragen für nicht zeitkritische Aufgaben.
@@ -85,7 +85,7 @@ HTTP und bieten einfache Anfragen für nicht zeitkritische Aufgaben.
 | `GET`        | `/api/game/join/{gameCode}` | Spieler tritt einem Spiel bei      |
 | `GET`        | `/api/scoreboard`           | Globales Scoreboard                |
 
-### 6.2 WebSocket-Kommunikation für Echtzeit-Daten
+### WebSocket-Kommunikation für Echtzeit-Daten
 
 Für die Echtzeit-Kommunikation im Spiel verwenden wir **WebSockets (Socket.io)**. Diese ermöglichen eine sofortige
 Übertragung von Spielereignissen wie Zeichnungen, Antworten und Punktestand-Updates.
