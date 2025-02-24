@@ -1,0 +1,36 @@
+# Node.js-Abhängigkeiten
+node_modules/
+.npm/
+.yarn/
+
+# Build- und Deployment-Dateien
+dist/
+build/
+coverage/
+
+# Umgebungsvariablen
+.env
+.env.local
+.env.*.local
+
+# Logs & Debugging
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# Temporäre Dateien
+tmp/
+temp/
+*.cache
+*.swp
+
+# IDE-spezifische Dateien
+.vscode/
+.idea/
+*.iml
+
+# macOS & Windows-spezifische Dateien
+.DS_Store
+Thumbs.db
