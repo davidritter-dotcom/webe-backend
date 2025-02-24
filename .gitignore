@@ -1,5 +1,5 @@
 # Node.js-Abhängigkeiten
-node_modules/
+/server/node_modules
 .npm/
 .yarn/
 
