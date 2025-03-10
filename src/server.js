@@ -1,9 +1,22 @@
+require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
+const cors = require("cors");
+const { connectDB } = require("./config");
+const authRoutes = require("./routes/auth");
+const protectedRoutes = require("./routes/protected");
+const { setupSocket } = require("./socket");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 const server = http.createServer(app);
+
+// Allow requests from frontend
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(express.json()); // Parses JSON bodies
+app.use(express.urlencoded({ extended: true })); // Parses URL-encoded bodies
+app.use(cookieParser());
 
 const PORT = 3001;
 
@@ -12,30 +25,15 @@ app.get("/", (req, res) => {
   res.send("Hello, this is our backend!");
 });
 
-// Create Socket.IO instance attached to the server
-const io = new socketIo.Server(server, {
-  cors: {
-    origin: "http://localhost:3000", // Allow frontend port (Next.js default)
-    methods: ["GET", "POST"],
-  },
-});
+// Connect to MongoDB
+connectDB();
 
-// WebSocket connection handling
-io.on("connection", (socket) => {
-  console.log("A user connected");
+// Use routes
+app.use("/auth", authRoutes);
+app.use("/protected", protectedRoutes);
 
-  // Listen for messages from the frontend
-  socket.on("chat_message", (message) => {
-    console.log(`"Message received from ${socket.id}: ${message}"`);
-    // Broadcast the message to all other connected clients
-    io.emit("chat_message", `${socket.id} writes: ${message}`);
-  });
-
-  // Handle disconnection
-  socket.on("disconnect", () => {
-    console.log(`"User ${socket.id} disconnected"`);
-  });
-});
+// Setup WebSocket
+setupSocket(server);
 
 // Start the server
 server.listen(PORT, () => {
