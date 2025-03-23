@@ -3,10 +3,10 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
-const { connectDB } = require("./config");
-const authRoutes = require("./routes/auth");
-const protectedRoutes = require("./routes/protected");
-const { setupSocket } = require("./socket");
+const { connectDB } = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
+const protectedRoutes = require("./routes/protectedRoutes");
+const { setupSocketServer } = require("./services/socketService");
 const cookieParser = require("cookie-parser");
 
 const app = express();
@@ -33,7 +33,7 @@ app.use("/auth", authRoutes);
 app.use("/protected", protectedRoutes);
 
 // Setup WebSocket
-setupSocket(server);
+setupSocketServer(server);
 
 // Start the server
 server.listen(PORT, () => {

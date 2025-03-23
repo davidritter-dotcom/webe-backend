@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const verifyToken = require("../middleware/auth"); // Import your middleware
+const verifyToken = require("../middleware/authMiddleware"); // Import your middleware
 
 const router = express.Router();
 
@@ -54,6 +54,7 @@ router.post("/logout", (req, res) => {
 // refresh token
 router.get("/refresh", (req, res) => {
   const refreshToken = req.cookies.refreshToken;
+  console.log(req.cookies);
   if (!refreshToken) return res.status(401).json({ message: "Unauthorized" });
 
   jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, user) => {
@@ -66,15 +67,21 @@ router.get("/refresh", (req, res) => {
 
 // Function to generate access token
 const generateAccessToken = (user) => {
-  return jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
-  });
+  console.log(`Generated Access Token for ${user.username}`);
+  return jwt.sign(
+    { id: user.id, username: user.username },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    }
+  );
 };
 
 // Function to generate refresh token
 const generateRefreshToken = (user) => {
+  console.log(`Generated Refresh Token for ${user.username}`);
   return jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, username: user.username },
     process.env.JWT_REFRESH_SECRET,
     {
       expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
