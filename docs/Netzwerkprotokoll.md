@@ -64,7 +64,7 @@ Jede Nachricht enthält mindestens die folgenden Felder:
 
 ## Beispielnachrichten
 
-### **1. INVITE_PLAYER (Server → Client)*
+### **1. INVITE_PLAYER (Server → Client)**
 ```json
 {
   "type": "INVITE_PLAYER",
