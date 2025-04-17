@@ -13,33 +13,71 @@ class WebSocketManager {
       },
     });
 
-    io.on("connection", (socket) => {
-      console.log("Neue WebSocket-Verbindung");
-      const token = socket.handshake.query.token;
+    // Middleware for authenticating socket connections
+    io.use((socket, next) => {
+      const token = socket.handshake.auth.token;
 
       if (!token) {
-        console.log("Kein Token bereitgestellt, Verbindung abgelehnt");
-        socket.disconnect(true);
-        return;
+        console.log("Kein Token bereitgestellt");
+        return next(new Error("Token erforderlich"));
       }
 
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userId = decoded.username;
+        socket.user = decoded; // Save user info on socket
         console.log(`Authentifizierter Benutzer: ${decoded.username}`);
-
-        WebSocketManager.register(userId, socket);
-
-        socket.onAny((event, data) => {
-          console.log(`Event empfangen von ${userId}: ${event}`, data);
-          WebSocketManager.dispatch(userId, event, data);
-        });
-
-        socket.on("disconnect", () => WebSocketManager.unregister(userId));
+        next();
       } catch (err) {
-        console.log("Ungültiges Token, Verbindung abgelehnt");
-        socket.disconnect(true);
+        console.log("Ungültiges Token");
+        next(new Error("Ungültiges Token"));
       }
+    });
+
+    io.on("connection", (socket) => {
+      //console.log("Neue WebSocket-Verbindung");
+      //const token = socket.handshake.query.token;
+      const userId = socket.user?.username;
+      if (!userId) {
+        console.log("Fehlender Benutzer im Socket – Verbindung abgelehnt");
+        socket.disconnect(true);
+        return;
+      }
+
+      console.log(`Neue WebSocket-Verbindung: ${userId}`);
+
+      // if (!token) {
+      //   console.log("Kein Token bereitgestellt, Verbindung abgelehnt");
+      //   socket.disconnect(true);
+      //   return;
+      // }
+      WebSocketManager.register(userId, socket);
+
+      socket.onAny((event, data) => {
+        console.log(`Event empfangen von ${userId}: ${event}`, data);
+        WebSocketManager.dispatch(userId, event, data);
+      });
+
+      socket.on("disconnect", () => {
+        console.log(`Socket getrennt: ${userId}`);
+        WebSocketManager.unregister(userId);
+      });
+      // try {
+      //   const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      //   const userId = decoded.username;
+      //   console.log(`Authentifizierter Benutzer: ${decoded.username}`);
+
+      //   WebSocketManager.register(userId, socket);
+
+      //   socket.onAny((event, data) => {
+      //     console.log(`Event empfangen von ${userId}: ${event}`, data);
+      //     WebSocketManager.dispatch(userId, event, data);
+      //   });
+
+      //   socket.on("disconnect", () => WebSocketManager.unregister(userId));
+      // } catch (err) {
+      //   console.log("Ungültiges Token, Verbindung abgelehnt");
+      //   socket.disconnect(true);
+      // }
     });
   }
 
@@ -69,8 +107,11 @@ class WebSocketManager {
   }
 
   static dispatch(userId, eventType, data) {
-    console.log("Dispatching event", eventType);
+    console.log("Dispach methode called");
+    console.log("try Dispatching event", eventType);
+    console.log(this.subscribers);
     if (WebSocketManager.subscribers.has(eventType)) {
+      console.log("Dispatching to subscribers", eventType);
       WebSocketManager.subscribers
         .get(eventType)
         .forEach((callback) => callback(userId, data));

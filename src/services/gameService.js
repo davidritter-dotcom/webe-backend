@@ -1,8 +1,8 @@
 const express = require("express");
 const http = require("http");
-const socketIo = require("socket.io");
+const { socketIo, io } = require("socket.io");
 const cors = require("cors");
-const WebSocketManager = require("./gameService");
+const WebSocketManager = require("./socketService");
 
 const lobbies = new Map();
 
@@ -27,7 +27,7 @@ function generateLobbyId() {
 
 WebSocketManager.subscribe("createLobby", (userId, data) => {
   console.log("createLobby", data);
-  const socket = connections.get(userId);
+  const socket = WebSocketManager.connections.get(userId);
   const lobbyId = generateLobbyId();
   lobbies.set(lobbyId, {
     players: new Set([socket.id]),
@@ -40,7 +40,7 @@ WebSocketManager.subscribe("createLobby", (userId, data) => {
 });
 
 WebSocketManager.subscribe("joinLobby", (userId, data) => {
-  const socket = connections.get(userId);
+  const socket = WebSocketManager.connections.get(userId);
   console.log(data);
   const lobbyId = data.lobbyId;
   console.log(`Attempt to join lobby: ${lobbyId}`);
@@ -76,7 +76,7 @@ WebSocketManager.subscribe("joinLobby", (userId, data) => {
 //   });
 
 WebSocketManager.subscribe("startGame", (userId, data) => {
-  const socket = connections.get(userId);
+  const socket = WebSocketManager.connections.get(userId);
   console.log(data);
   const lobbyId = data.lobbyId;
   const lobby = lobbies.get(lobbyId);
@@ -95,7 +95,7 @@ WebSocketManager.subscribe("startGame", (userId, data) => {
 //   });
 
 WebSocketManager.subscribe("sendMessage", (userId, data) => {
-  const socket = connections.get(userId);
+  const socket = WebSocketManager.connections.get(userId);
   console.log(data);
   const lobbyId = data.lobbyId;
   const message = data.message;
@@ -112,7 +112,7 @@ WebSocketManager.subscribe("sendMessage", (userId, data) => {
 //   });
 
 WebSocketManager.subscribe("draw", (userId, data) => {
-  const socket = connections.get(userId);
+  const socket = WebSocketManager.connections.get(userId);
   console.log(data);
   const lobbyId = data.lobbyId;
   const drawData = data.drawData;
@@ -133,7 +133,7 @@ WebSocketManager.subscribe("draw", (userId, data) => {
 //   });
 
 WebSocketManager.subscribe("draw", (userId, data) => {
-  const socket = connections.get(userId);
+  const socket = WebSocketManager.connections.get(userId);
   console.log(data);
   console.log("Client disconnected");
   lobbies.forEach((lobby, lobbyId) => {
@@ -143,6 +143,36 @@ WebSocketManager.subscribe("draw", (userId, data) => {
       if (lobby.players.size === 0) {
         lobbies.delete(lobbyId);
       }
+    }
+  });
+});
+
+WebSocketManager.subscribe("draw_data", (userId, data) => {
+  // Nachricht an alle Clients senden (Broadcast)
+  WebSocketManager.connections.forEach((ws, uid) => {
+    if (uid !== userId) {
+      console.log(`Sending draw_data to ${uid}`);
+      ws.emit("draw_data", userId, data);
+    }
+  });
+});
+
+WebSocketManager.subscribe("start_path", (userId, data) => {
+  // Nachricht an alle Clients senden (Broadcast)
+  WebSocketManager.connections.forEach((ws, uid) => {
+    if (uid !== userId) {
+      console.log(`Sending start_path to ${uid} with data`, data);
+      ws.emit("start_path", userId, data);
+    }
+  });
+});
+
+WebSocketManager.subscribe("end_path", (userId, data) => {
+  // Nachricht an alle Clients senden (Broadcast)
+  WebSocketManager.connections.forEach((ws, uid) => {
+    if (uid !== userId) {
+      console.log(`Sending start_path to ${uid}`);
+      ws.emit("end_path", userId);
     }
   });
 });
