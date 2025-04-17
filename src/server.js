@@ -41,7 +41,3 @@ setupSocketServer(server);
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
-// app.listen(PORT, "192.168.56.1", () => {
-//   console.log(`Server running on http://192.168.56.1:${PORT}`);
-// });
