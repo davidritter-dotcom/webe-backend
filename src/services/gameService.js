@@ -132,7 +132,7 @@ WebSocketManager.subscribe("draw", (userId, data) => {
 //     });
 //   });
 
-WebSocketManager.subscribe("draw", (userId, data) => {
+WebSocketManager.subscribe("disconnect", (userId, data) => {
   const socket = WebSocketManager.connections.get(userId);
   console.log(data);
   console.log("Client disconnected");
@@ -171,8 +171,18 @@ WebSocketManager.subscribe("end_path", (userId, data) => {
   // Nachricht an alle Clients senden (Broadcast)
   WebSocketManager.connections.forEach((ws, uid) => {
     if (uid !== userId) {
-      console.log(`Sending start_path to ${uid}`);
+      console.log(`Sending end_path to ${uid}`);
       ws.emit("end_path", userId);
+    }
+  });
+});
+
+WebSocketManager.subscribe("clear_canvas", (userId, data) => {
+  // Nachricht an alle Clients senden (Broadcast)
+  WebSocketManager.connections.forEach((ws, uid) => {
+    if (uid !== userId) {
+      console.log(`Sending clear_canvas to ${uid}`);
+      ws.emit("clear_canvas", userId);
     }
   });
 });
