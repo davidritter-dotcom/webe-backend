@@ -1,15 +1,16 @@
 # Netzwerkprotokoll für WebE Semesterarbeit
 
 ## Übersicht
+
 Dieses Protokoll definiert die Kommunikation zwischen dem Spielclient und dem Server für unser Multiplayer-Spiel. Es verwendet **JSON** als Nachrichtenformat und **WebSockets (Socket.io)** für Echtzeitkommunikation. Für nicht zeitkritische Aufgaben kommen **REST-APIs** zum Einsatz.
 
 Jede Nachricht enthält mindestens die folgenden Felder:
 
 ```json
 {
-    "type": "messageType",  
-    "timestamp": "ISO8601 Zeitstempel",  
-    "payload": { ... }  
+    "type": "messageType",
+    "timestamp": "ISO8601 Zeitstempel",
+    "payload": { ... }
 }
 ```
 
@@ -18,53 +19,61 @@ Jede Nachricht enthält mindestens die folgenden Felder:
 ## Nachrichtentypen
 
 ### **1. Allgemein**
-| Typ         | Richtung         | Beschreibung                              |
-|------------|----------------|-------------------------------------------|
-| `ERROR`    | Server ↔ Client | Fehlernachrichten                         |
+
+| Typ     | Richtung        | Beschreibung      |
+| ------- | --------------- | ----------------- |
+| `ERROR` | Server ↔ Client | Fehlernachrichten |
 
 ### **2. Lobby & Spielverwaltung**
-| Typ             | Richtung         | Beschreibung                          |
-|----------------|----------------|--------------------------------------|
-| `JOIN_LOBBY`   | Client → Server | Spieler tritt einer Lobby bei        |
-| `LOBBY_JOINED` | Server → Client | Bestätigung, enthält Lobby-Infos     |
-| `INVITE_PLAYER` | Server → Client | Einladung in eine Lobby     |
-| `START_GAME`   | Client → Server | Host startet das Spiel               |
-| `GAME_STARTED` | Server → Client | Das Spiel beginnt                    |
+
+| Typ             | Richtung        | Beschreibung                     |
+| --------------- | --------------- | -------------------------------- |
+| `JOIN_LOBBY`    | Client → Server | Spieler tritt einer Lobby bei    |
+| `LOBBY_JOINED`  | Server → Client | Bestätigung, enthält Lobby-Infos |
+| `INVITE_PLAYER` | Server → Client | Einladung in eine Lobby          |
+| `START_GAME`    | Client → Server | Host startet das Spiel           |
+| `GAME_STARTED`  | Server → Client | Das Spiel beginnt                |
+| `CREATE_LOBBY`  | Client → Server | Lobby erstellt                   |
 
 ### **3. Rundenmanagement**
-| Typ          | Richtung         | Beschreibung                   |
-|-------------|----------------|------------------------------|
-| `NEW_ROUND` | Server → Client | Ein neuer Zeichner wird bestimmt |
-| `WORD_CHOSEN` | Server → Client | Zeichner erhält das Wort    |
-| `CURRENT_TURN` | Server → Client | Gibt an, welcher Spieler aktuell zeichnet    |
-| `TIMER_UPDATE` | Server → Client | Zeitanzeige für die Runde   |
+
+| Typ            | Richtung        | Beschreibung                              |
+| -------------- | --------------- | ----------------------------------------- |
+| `NEW_ROUND`    | Server → Client | Ein neuer Zeichner wird bestimmt          |
+| `WORD_CHOSEN`  | Server → Client | Zeichner erhält das Wort                  |
+| `CURRENT_TURN` | Server → Client | Gibt an, welcher Spieler aktuell zeichnet |
+| `TIMER_UPDATE` | Server → Client | Zeitanzeige für die Runde                 |
 
 ### **4. Zeichnen & Raten**
-| Typ            | Richtung         | Beschreibung                          |
-|---------------|----------------|--------------------------------------|
-| `DRAW_DATA`   | Client ↔ Server | Echtzeit-Zeichnungsdaten            |
-| `CLEAR_CANVAS` | Client → Server | Der Zeichner löscht das Canvas       |
-| `GUESS_WORD`  | Client → Server | Spieler sendet eine Wortvermutung    |
-| `CORRECT_WORD` | Server → Client | Ein Spieler hat das Wort erraten     |
-| `UPDATE_SCORE` | Server → Client | Punktestand wird aktualisiert        |
+
+| Typ            | Richtung        | Beschreibung                      |
+| -------------- | --------------- | --------------------------------- |
+| `DRAW_DATA`    | Client ↔ Server | Echtzeit-Zeichnungsdaten          |
+| `CLEAR_CANVAS` | Client → Server | Der Zeichner löscht das Canvas    |
+| `GUESS_WORD`   | Client → Server | Spieler sendet eine Wortvermutung |
+| `CORRECT_WORD` | Server → Client | Ein Spieler hat das Wort erraten  |
+| `UPDATE_SCORE` | Server → Client | Punktestand wird aktualisiert     |
 
 ### **5. Chat-Funktion**
-| Typ            | Richtung         | Beschreibung                     |
-|---------------|----------------|---------------------------------|
-| `CHAT_MESSAGE` | Client → Server | Chatnachricht eines Spielers    |
-| `CHAT_UPDATE`  | Server → Client | Übermittlung an alle Spieler   |
+
+| Typ            | Richtung        | Beschreibung                 |
+| -------------- | --------------- | ---------------------------- |
+| `CHAT_MESSAGE` | Client → Server | Chatnachricht eines Spielers |
+| `CHAT_UPDATE`  | Server → Client | Übermittlung an alle Spieler |
 
 ### **6. Spieleraktionen & Spielende**
-| Typ         | Richtung         | Beschreibung                        |
-|------------|----------------|------------------------------------|
+
+| Typ           | Richtung        | Beschreibung                        |
+| ------------- | --------------- | ----------------------------------- |
 | `PLAYER_LEFT` | Server → Client | Ein Spieler hat das Spiel verlassen |
-| `GAME_END`  | Server → Client | Das Spiel ist beendet              |
+| `GAME_END`    | Server → Client | Das Spiel ist beendet               |
 
 ---
 
 ## Beispielnachrichten
 
 ### **1. INVITE_PLAYER (Server → Client)**
+
 ```json
 {
   "type": "INVITE_PLAYER",
@@ -72,12 +81,13 @@ Jede Nachricht enthält mindestens die folgenden Felder:
   "payload": {
     "lobbyId": "12345",
     "invitedPlayerUsername": "Enzo",
-    "message":"please join my game"
+    "message": "please join my game"
   }
 }
 ```
 
 ### **2. GAME_STARTED (Server → Client)**
+
 ```json
 {
   "type": "GAME_STARTED",
@@ -89,6 +99,7 @@ Jede Nachricht enthält mindestens die folgenden Felder:
 ```
 
 ### **3. CHAT_MESSAGE (Client → Server)**
+
 ```json
 {
   "type": "CHAT_MESSAGE",
@@ -101,6 +112,7 @@ Jede Nachricht enthält mindestens die folgenden Felder:
 ```
 
 ### **4. GAME_UPDATE (Server → Client)**
+
 ```json
 {
   "type": "GAME_UPDATE",
@@ -115,14 +127,15 @@ Jede Nachricht enthält mindestens die folgenden Felder:
 ```
 
 ### **5. WORD_CHOSEN (Server → Client)**
+
 ```json
 {
-"type": "WORD_CHOSEN",
-"timestamp": "2025-03-23T12:11:00Z",
-"payload": {
-"drawerId": "P2",
-"word": "Banane"
-}
+  "type": "WORD_CHOSEN",
+  "timestamp": "2025-03-23T12:11:00Z",
+  "payload": {
+    "drawerId": "P2",
+    "word": "Banane"
+  }
 }
 ```
 
@@ -130,14 +143,14 @@ Jede Nachricht enthält mindestens die folgenden Felder:
 
 ## REST-API Endpunkte
 
-| Methode  | Endpunkt             | Beschreibung                       |
-|----------|----------------------|----------------------------------|
-| `POST`   | `/auth/register`      | Registrierung eines Spielers     |
-| `POST`   | `/auth/login`         | Anmeldung eines Spielers         |
-| `POST`   | `/auth/logout`        | Spieler ausloggen                |
-| `GET`    | `/auth/refresh`       | Neues Token generieren           |
-| `POST`   | `/api/invite`         | Spieler in Lobby einladen        |
-| `GET`    | `/api/game/{id}`      | Spielstatus abrufen              |
+| Methode | Endpunkt         | Beschreibung                 |
+| ------- | ---------------- | ---------------------------- |
+| `POST`  | `/auth/register` | Registrierung eines Spielers |
+| `POST`  | `/auth/login`    | Anmeldung eines Spielers     |
+| `POST`  | `/auth/logout`   | Spieler ausloggen            |
+| `GET`   | `/auth/refresh`  | Neues Token generieren       |
+| `POST`  | `/api/invite`    | Spieler in Lobby einladen    |
+| `GET`   | `/api/game/{id}` | Spielstatus abrufen          |
 
 ---
 
@@ -158,4 +171,3 @@ Jede Nachricht enthält mindestens die folgenden Felder:
 ## Hinweise
 
 - Alle Zeitstempel sind im **ISO8601**-Format.
-

@@ -6,10 +6,12 @@ const cors = require("cors");
 const { connectDB } = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const protectedRoutes = require("./routes/protectedRoutes");
-const { setupSocketServer } = require("./services/socketService");
+const lobbyRoutes = require("./routes/lobbyRoutes");
+const { setupSocketServer } = require("./services/WebSocketManager");
 const cookieParser = require("cookie-parser");
 require("./services/chatService");
 require("./services/gameService");
+require("./services/lobbyService");
 
 const app = express();
 const server = http.createServer(app);
@@ -33,6 +35,7 @@ connectDB();
 // Use routes
 app.use("/auth", authRoutes);
 app.use("/protected", protectedRoutes);
+app.use("/lobby", lobbyRoutes);
 
 // Setup WebSocket
 setupSocketServer(server);

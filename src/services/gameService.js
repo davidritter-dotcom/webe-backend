@@ -2,7 +2,7 @@ const express = require("express");
 const http = require("http");
 const { socketIo, io } = require("socket.io");
 const cors = require("cors");
-const WebSocketManager = require("./socketService");
+const WebSocketManager = require("./WebSocketManager");
 
 const lobbies = new Map();
 

@@ -1,4 +1,4 @@
-const WebSocketManager = require("./socketService");
+const WebSocketManager = require("./WebSocketManager");
 
 // Beispiel-Subscriber für Chat-Nachrichten
 WebSocketManager.subscribe("chat_message", (userId, data) => {

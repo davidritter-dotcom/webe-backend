@@ -54,7 +54,7 @@ router.post("/logout", (req, res) => {
 // refresh token
 router.get("/refresh", (req, res) => {
   const refreshToken = req.cookies.refreshToken;
-  console.log(req.cookies);
+  //console.log(req.cookies);
   if (!refreshToken) return res.status(401).json({ message: "Unauthorized" });
 
   jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, user) => {
