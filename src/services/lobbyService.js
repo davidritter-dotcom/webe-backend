@@ -133,6 +133,12 @@ WebSocketManager.subscribe("LEAVE_LOBBY", async (userId, { lobbyId }) => {
       // Keine Spieler mehr → Lobby löschen
       await Lobby.deleteOne({ lobbyId });
       console.log(`Lobby ${lobbyId} wurde gelöscht (letzter Spieler ging).`);
+      const socket = WebSocketManager.connections.get(userId);
+      if (socket) {
+        socket.emit("LOBBY_LEFT", { lobbyId });
+      }
+
+      console.log(`${userId} hat Lobby ${lobbyId} verlassen.`);
       return;
     }
   }
