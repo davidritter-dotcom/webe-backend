@@ -1,9 +1,9 @@
-const socketIo = require("socket.io");
-const jwt = require("jsonwebtoken");
+const socketIo = require("socket.io")
+const jwt = require("jsonwebtoken")
 
 class WebSocketManager {
-  static connections = new Map(); // userId -> WebSocket
-  static subscribers = new Map(); // eventType -> [callback1, callback2, ...]
+  static connections = new Map() // userId -> WebSocket
+  static subscribers = new Map() // eventType -> [callback1, callback2, ...]
 
   static setupSocketServer(server) {
     const io = socketIo(server, {
@@ -11,85 +11,148 @@ class WebSocketManager {
         origin: "http://localhost:3000",
         methods: ["GET", "POST"],
       },
-    });
+    })
 
     // Middleware for authenticating socket connections
     io.use((socket, next) => {
-      const token = socket.handshake.auth.token;
+      const token = socket.handshake.auth.token
 
       if (!token) {
-        console.log("Kein Token bereitgestellt");
-        return next(new Error("Token erforderlich"));
+        console.log("Kein Token bereitgestellt")
+        return next(new Error("Token erforderlich"))
       }
 
       try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        socket.user = decoded; // Save user info on socket
-        console.log(`Authentifizierter Benutzer: ${decoded.username}`);
-        next();
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        socket.user = decoded // Save user info on socket
+        console.log(`Authentifizierter Benutzer: ${decoded.username}`)
+        next()
       } catch (err) {
-        console.log("Ungültiges Token");
-        next(new Error("Ungültiges Token"));
+        console.log("Ungültiges Token")
+        next(new Error("Ungültiges Token"))
       }
-    });
+    })
 
     io.on("connection", (socket) => {
-      const userId = socket.user?.username;
+      const userId = socket.user?.username
       if (!userId) {
-        console.log("Fehlender Benutzer im Socket – Verbindung abgelehnt");
-        socket.disconnect(true);
-        return;
+        console.log("Fehlender Benutzer im Socket – Verbindung abgelehnt")
+        socket.disconnect(true)
+        return
       }
 
-      console.log(`Neue WebSocket-Verbindung: ${userId}`);
+      console.log(`Neue WebSocket-Verbindung: ${userId}`)
 
-      WebSocketManager.register(userId, socket);
+      WebSocketManager.register(userId, socket)
 
       socket.onAny((event, data) => {
-        console.log(`Event empfangen von ${userId}: ${event}`, data);
-        WebSocketManager.dispatch(userId, event, data);
-      });
+        console.log(`Event empfangen von ${userId}: ${event}`, data)
+        WebSocketManager.dispatch(userId, event, data)
+      })
 
       socket.on("disconnect", () => {
-        console.log(`Socket getrennt: ${userId}`);
-        WebSocketManager.unregister(userId);
-      });
-    });
+        console.log(`Socket getrennt: ${userId}`)
+        WebSocketManager.unregister(userId)
+      })
+    })
   }
 
   static register(userId, ws) {
-    console.log("Registering user", userId);
+    console.log("Registering user", userId)
     if (WebSocketManager.connections.has(userId)) {
-      WebSocketManager.connections.get(userId).disconnect(true);
-      WebSocketManager.connections.delete(userId);
+      WebSocketManager.connections.get(userId).disconnect(true)
+      WebSocketManager.connections.delete(userId)
     }
-    WebSocketManager.connections.set(userId, ws);
-    console.log(`User ${userId} connected`);
+    WebSocketManager.connections.set(userId, ws)
+    console.log(`User ${userId} connected`)
   }
 
   static unregister(userId) {
     if (WebSocketManager.connections.has(userId)) {
-      WebSocketManager.connections.delete(userId);
-      console.log(`User ${userId} disconnected`);
+      WebSocketManager.connections.delete(userId)
+      console.log(`User ${userId} disconnected`)
     }
   }
 
   static subscribe(eventType, callback) {
-    console.log("Subscribing to event", eventType);
+    console.log("Subscribing to event", eventType)
     if (!WebSocketManager.subscribers.has(eventType)) {
-      WebSocketManager.subscribers.set(eventType, []);
+      WebSocketManager.subscribers.set(eventType, [])
     }
-    WebSocketManager.subscribers.get(eventType).push(callback);
+    WebSocketManager.subscribers.get(eventType).push(callback)
   }
 
   static dispatch(userId, eventType, data) {
     if (WebSocketManager.subscribers.has(eventType)) {
-      console.log("Dispatching to subscribers", eventType);
-      WebSocketManager.subscribers
-        .get(eventType)
-        .forEach((callback) => callback(userId, data));
+      console.log("Dispatching to subscribers", eventType)
+      WebSocketManager.subscribers.get(eventType).forEach((callback) => callback(userId, data))
+    }
+  }
+
+  // New method to broadcast a message to all connected clients
+  static broadcast(eventType, data) {
+    console.log(`Broadcasting ${eventType} to all users`)
+    WebSocketManager.connections.forEach((socket, userId) => {
+      console.log(`Sending ${eventType} to ${userId}`)
+      socket.emit(eventType, data)
+    })
+  }
+
+  // New method to send a message to a specific user
+  static sendToUser(userId, eventType, data) {
+    const socket = WebSocketManager.connections.get(userId)
+    if (socket) {
+      console.log(`Sending ${eventType} to ${userId}:`, data)
+      socket.emit(eventType, data)
+      return true
+    } else {
+      console.log(`Failed to send ${eventType} to ${userId}: User not connected`)
+      return false
     }
   }
 }
 
-module.exports = WebSocketManager;
+// Add a new handler for the PLAYER_READY event
+// Add this near the end of the file, before the module.exports line
+
+WebSocketManager.subscribe("PLAYER_READY", async (userId, data) => {
+  console.log(`[DEBUG] Player ${userId} is ready`)
+
+  // Find any active games this player is in
+  const Lobby = require("../models/Lobby")
+  const lobby = await Lobby.findOne({
+    players: userId,
+    status: "started",
+  })
+
+  if (lobby) {
+    console.log(`[DEBUG] Player ${userId} is in an active game (lobby ${lobby.lobbyId})`)
+
+    // Re-send game state to this player
+    const sock = WebSocketManager.connections.get(userId)
+    if (sock) {
+      const isDrawing = userId === lobby.currentDrawer
+      const wordToSend = isDrawing ? lobby.currentWord : null
+
+      console.log(`[DEBUG] Re-sending game state to ${userId}: isDrawing=${isDrawing}, drawer=${lobby.currentDrawer}`)
+
+      // Send debug message first
+      sock.emit("DEBUG_MESSAGE", {
+        message: `Game state refreshed. You ${isDrawing ? "are" : "are not"} the drawer. Drawer is ${lobby.currentDrawer}.`,
+      })
+
+      // Then send the game state
+      sock.emit("GAME_STARTED", {
+        lobbyId: lobby.lobbyId,
+        players: lobby.players,
+        currentDrawer: lobby.currentDrawer,
+        isDrawing: isDrawing,
+        currentWord: wordToSend,
+        currentRound: lobby.currentRound,
+        totalRounds: lobby.totalRounds,
+      })
+    }
+  }
+})
+
+module.exports = WebSocketManager
