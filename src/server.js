@@ -12,6 +12,7 @@ const cookieParser = require("cookie-parser");
 require("./services/chatService");
 require("./services/gameService");
 require("./services/lobbyService");
+require("./services/drawService");
 
 const app = express();
 const server = http.createServer(app);
