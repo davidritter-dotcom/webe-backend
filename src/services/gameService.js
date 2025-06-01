@@ -363,6 +363,7 @@ WebSocketManager.subscribe("PLAYER_READY", async (userId, data) => {
         currentWord: wordToSend,
         currentRound: lobby.currentRound,
         totalRounds: lobby.totalRounds,
+        scores: Array.from(lobby.scores.entries()),
       });
     }
   }
@@ -414,6 +415,63 @@ WebSocketManager.subscribe("GUESS_WORD", async (userId, { lobbyId, guess }) => {
       }
     });
   }
+});
+
+WebSocketManager.subscribe("LEAVE_GAME", async (userId, { lobbyId }) => {
+  const lobby = await Lobby.findOne({ lobbyId });
+
+  if (!lobby) {
+    const socket = WebSocketManager.connections.get(userId);
+    socket.emit("LEAVE_GAME_ERROR", { message: "Lobby nicht gefunden." });
+    return;
+  }
+
+  // Spieler aus der Lobby entfernen
+  lobby.players = lobby.players.filter((id) => id !== userId);
+  lobby.scores.delete(userId); // Entferne den Spieler aus der Punktetabelle
+
+  // Wenn der Host geht, übergebe Hostrolle oder lösche die Lobby
+  if (lobby.host === userId) {
+    if (lobby.players.length > 0) {
+      lobby.host = lobby.players[0]; // Neuen Host setzen
+    } else {
+      // Keine Spieler mehr → Lobby löschen
+      await Lobby.deleteOne({ lobbyId });
+      console.log(`Game ${lobbyId} wurde gelöscht (letzter Spieler ging).`);
+      const socket = WebSocketManager.connections.get(userId);
+      if (socket) {
+        socket.emit("GAME_LEFT", { lobbyId });
+      }
+
+      console.log(`${userId} hat Game ${lobbyId} verlassen.`);
+      return;
+    }
+  }
+
+  // Zeichnerwechsel
+  if (lobby.currentDrawer === userId) {
+    lobby.currentDrawer = lobby.players[0];
+  }
+
+  await lobby.save();
+
+  // Alle verbleibenden Spieler über die Änderung informieren
+  lobby.players.forEach((player) => {
+    const sock = WebSocketManager.connections.get(player);
+    if (sock) {
+      sock.emit("USER_LEFT_GAME", {
+        username: userId,
+        currentDrawer: lobby.currentDrawer,
+      });
+    }
+  });
+
+  const socket = WebSocketManager.connections.get(userId);
+  if (socket) {
+    socket.emit("GAME_LEFT", { lobbyId });
+  }
+
+  console.log(`${userId} hat Game ${lobbyId} verlassen.`);
 });
 
 module.exports.endRound = endRound;
