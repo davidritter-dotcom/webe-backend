@@ -10,7 +10,7 @@ const lobbyRoutes = require("./routes/lobbyRoutes");
 const { setupSocketServer } = require("./services/WebSocketManager");
 const cookieParser = require("cookie-parser");
 require("./services/chatService");
-require("./services/gameServiceNew");
+require("./services/gameService");
 require("./services/lobbyService");
 require("./services/drawService");
 
@@ -20,20 +20,20 @@ const server = http.createServer(app);
 // Allow requests from frontend
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://drawduel.vibetastic.ch"
+  "https://drawduel.vibetastic.ch",
 ];
 
 app.use(
-    cors({
-      origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error("Nicht erlaubter Origin"));
-        }
-      },
-      credentials: true,
-    })
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Nicht erlaubter Origin"));
+      }
+    },
+    credentials: true,
+  })
 );
 
 app.use(express.json()); // Parses JSON bodies

@@ -1,6 +1,6 @@
 const WebSocketManager = require("./WebSocketManager");
 const Lobby = require("../models/Lobby");
-const { endRound } = require("./gameServiceNew"); // Import the endRound function
+const { endRound } = require("./gameService"); // Import the endRound function
 
 // Chat message handler
 WebSocketManager.subscribe("chat_message", async (userId, data) => {
