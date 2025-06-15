@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const lobbySchema = new mongoose.Schema({
   lobbyId: { type: String, required: true, unique: true },
@@ -14,6 +14,14 @@ const lobbySchema = new mongoose.Schema({
   totalRounds: { type: Number },
   correctGuesses: [{ type: String }], // Players who guessed correctly in current round
   roundStartTime: { type: Date },
-})
+  roundTime: { type: Number, default: 60 }, // Time for each round in seconds
+  wordOptions: [{ type: String }], // Options for the current word
+  chatHistory: [
+    {
+      userId: String,
+      message: String,
+    },
+  ],
+});
 
-module.exports = mongoose.model("Lobby", lobbySchema)
+module.exports = mongoose.model("Lobby", lobbySchema);

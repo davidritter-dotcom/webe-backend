@@ -1,6 +1,6 @@
 const WebSocketManager = require("./WebSocketManager");
 const Lobby = require("../models/Lobby");
-const { endRound } = require("./gameService"); // Import the endRound function
+const { endRound } = require("./gameServiceNew"); // Import the endRound function
 
 // Chat message handler
 WebSocketManager.subscribe("chat_message", async (userId, data) => {
@@ -13,6 +13,12 @@ WebSocketManager.subscribe("chat_message", async (userId, data) => {
   });
 
   if (lobby) {
+    lobby.chatHistory.push({
+      userId,
+      message: data.message,
+    });
+    await lobby.save();
+
     // Don't allow the drawer to chat/guess
     if (userId === lobby.currentDrawer) {
       const socket = WebSocketManager.connections.get(userId);
@@ -63,7 +69,9 @@ WebSocketManager.subscribe("chat_message", async (userId, data) => {
         if (ws) {
           ws.emit("chat_message", {
             userId: "System",
-            message: `${userId} has guessed the word! (+${points} points)`,
+            message: `${
+              userId === player ? "You have" : player + " has"
+            } guessed the word! (+${points} points)`,
           });
         }
       });
