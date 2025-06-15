@@ -18,7 +18,24 @@ const app = express();
 const server = http.createServer(app);
 
 // Allow requests from frontend
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://drawduel.vibetastic.ch"
+];
+
+app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error("Nicht erlaubter Origin"));
+        }
+      },
+      credentials: true,
+    })
+);
+
 app.use(express.json()); // Parses JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded bodies
 app.use(cookieParser());
