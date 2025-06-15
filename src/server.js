@@ -10,7 +10,7 @@ const lobbyRoutes = require("./routes/lobbyRoutes");
 const { setupSocketServer } = require("./services/WebSocketManager");
 const cookieParser = require("cookie-parser");
 require("./services/chatService");
-require("./services/gameService");
+require("./services/gameServiceNew");
 require("./services/lobbyService");
 require("./services/drawService");
 

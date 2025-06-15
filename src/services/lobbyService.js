@@ -3,7 +3,7 @@ const WebSocketManager = require("./WebSocketManager");
 const Lobby = require("../models/Lobby");
 const User = require("../models/User");
 const { v4: uuidv4 } = require("uuid");
-const { startGame } = require("./gameService");
+const { startGame } = require("./gameServiceNew");
 
 WebSocketManager.subscribe("CREATE_LOBBY", async (userId, data) => {
   const lobbyId = uuidv4();

@@ -1,0 +1,39 @@
+const wordList = [
+  "apple",
+  "banana",
+  "car",
+  "dog",
+  "elephant",
+  "flower",
+  "guitar",
+  "house",
+  "island",
+  "jacket",
+  "kite",
+  "lemon",
+  "mountain",
+  "notebook",
+  "ocean",
+  "piano",
+  "queen",
+  "rainbow",
+  "sun",
+  "tree",
+  "umbrella",
+  "violin",
+  "waterfall",
+  "xylophone",
+  "yacht",
+  "zebra",
+  "airplane",
+  "butterfly",
+  "castle",
+  "dolphin",
+];
+
+function getRandomWords(count) {
+  const shuffled = [...wordList].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
+
+module.exports = { getRandomWords };

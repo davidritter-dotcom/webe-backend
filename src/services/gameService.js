@@ -319,7 +319,6 @@ async function endRound(lobbyId) {
 }
 
 // Add a new handler for the PLAYER_READY event
-// Add this near the end of the file, before the module.exports line
 
 WebSocketManager.subscribe("PLAYER_READY", async (userId, data) => {
   console.log(`[DEBUG] Player ${userId} is ready`);
