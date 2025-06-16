@@ -70,7 +70,7 @@ WebSocketManager.subscribe("chat_message", async (userId, data) => {
           ws.emit("chat_message", {
             userId: "System",
             message: `${
-              userId === player ? "You have" : player + " has"
+              userId === player ? "You have" : userId + " has"
             } guessed the word! (+${points} points)`,
           });
         }
