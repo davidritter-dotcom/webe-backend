@@ -10,6 +10,14 @@ const router = express.Router();
 router.post("/register", async (req, res) => {
   const { username, password } = req.body;
 
+  // Check for special characters in username
+  const specialChars = /[.!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+  if (specialChars.test(username)) {
+    return res
+      .status(400)
+      .json({ message: "Benutzername darf keine Sonderzeichen enthalten" });
+  }
+
   const existingUser = await User.findOne({ username });
   if (existingUser)
     return res.status(400).json({ message: "Benutzername existiert bereits" });
